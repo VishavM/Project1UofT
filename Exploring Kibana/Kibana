@@ -1,0 +1,194 @@
+Exploring Kibana
+You are a DevOps professional and have set up monitoring for one of your web servers. You are collecting all sorts of web log data and it is your job to review the data regularly to make sure everything is running smoothly.
+
+
+Today, you notice something strange in the logs and you want to take a closer look.
+
+
+Your task: Explore the web server logs to see if there's anything unusual. Specifically, you will:
+
+
+⚠ Heads Up: These sample logs are specific to the time you view them. As such, your answers will be different from the answers provided in the solution file.
+
+Instructions
+Add the sample web log data to Kibana.
+
+
+
+Answer the following questions:
+
+
+In the last 7 days, how many unique visitors were located in India? 224 unique visitors 
+
+In the last 24 hours, of the visitors from China, how many were using Mac OSX? 9 unique visitors 
+
+In the last 2 days, what percentage of visitors received 404 errors? How about 503 errors? 4.545% average visitors received the 404 error per 4 hours in the past 2 days. 95.455% average received 503 error every 4 hours in the past 2 days. 
+
+In the last 7 days, what country produced the majority of the traffic on the website? China
+
+Of the traffic that's coming from that country, what time of day had the highest amount of activity? China- 13hrs
+
+List all the types of downloaded files that have been identified for the last 7 days, along with a short description of each file type (use Google if you aren't sure about a particular file type).
+File Types:
+CSS: is a cascading style sheet used to format the contents of a webpage. It contains customized properties for how to display HTML elements. This file type can define the size, colour, font, line, spacing, indentation, borders and location of the HTML elements. 
+DEB: is a software package used by the Debian Linux Distribution and it’s variants (i.e. Ubuntu). This file type is typically used to install or update Unix applications. Each DEB file is a standard Unix archive that contains two .TAR archives: one for installer control information and another for installable data.
+GZ: is an archive file compressed by the standard GNU zip (gzip) compression algorithm. Usually has one compressed file but can also store multiple. Gzip is typically used on Unix operating systems for file compression. 
+RPM: is an installation package originally developed by Red Hat Linux operating system but is used by several other Linux distributions. RPM files are most commonly used to installing programs on the Linux Systems. 
+ZIP: is an archive file format that supports lossless data compression. Can contain one or more file or directories that may have been compressed. The ZIP file format permits a number of compression algorithms, though DEFLATE is the most common.
+
+Now that you have a feel for the data, Let's dive a bit deeper. Look at the chart that shows Unique Visitors Vs. Average Bytes.
+
+Locate the time frame in the last 7 days with the most amount of bytes (activity).
+April 3 at 21:00 (11pm) has the highest average byte count: 15,709
+
+In your own words, is there anything that seems potentially strange about this activity?
+Yes this activity appears to be significantly strange as the average bytes over the past seven days is 5,871 and 15,709 is significantly higher than this average. The activity is much higher on this date and  at this specific time which is suspicious. 
+
+Filter the data by this event.
+
+What is the timestamp for this event?  22:55
+What kind of file was downloaded? RPM file type
+From what country did this activity originate? Source India; Destination China 
+What HTTP response codes were encountered by this visitor? 200 OK success status
+Switch to the Kibana Discover page to see more details about this activity.
+What is the source IP address of this activity? 
+35.143.166.159 
+What are the geo coordinates of this activity?  
+Latitude: 43.34120996296406
+Longitude: -73.61030758358538
+What OS was the source machine running? Windows 8
+What is the full URL that was accessed? "https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-6.3.2-i686.rpm" 
+From what website did the visitor's traffic originate? http://facebook.com/success/jay-c-buckey
+
+Finish your investigation with a short overview of your insights.
+
+What do you think the user was doing? The user is requesting access to the sample web logs in metricbeat.
+Was the file they downloaded malicious? If not, what is the file used for? The file that they downloaded does not appear to be malicious as it’s the sample web logs. The file can be used for viewing log data. 
+Is there anything that seems suspicious about this activity? There doesn’t seem to be anything suspicious as there are no malicious files, fake sites or any red flags observed in the request. The only thing that maybe slightly questionable is the fact that it originated from Facebook. 
+Is any of the traffic you inspected potentially outside of compliance guidelines? Yes, the fact that the request came in from Facebook may be outside of compliance guidelines. 
+
+REQUEST
+
+{
+  "size": 0,
+  "aggs": {
+    "grid": {
+      "geotile_grid": {
+        "field": "geo.coordinates",
+        "precision": 6
+      },
+      "aggs": {
+        "1": {
+          "geo_centroid": {
+            "field": "geo.coordinates"
+          }
+        },
+        "sum_of_bytes": {
+          "sum": {
+            "field": "bytes"
+          }
+        }
+      }
+    }
+  },
+  "stored_fields": [
+    "*"
+  ],
+  "script_fields": {
+    "hour_of_day": {
+      "script": {
+        "source": "doc['timestamp'].value.getHour()",
+        "lang": "painless"
+      }
+    }
+  },
+  "docvalue_fields": [
+    {
+      "field": "@timestamp",
+      "format": "date_time"
+    },
+    {
+      "field": "timestamp",
+      "format": "date_time"
+    },
+    {
+      "field": "utc_time",
+      "format": "date_time"
+    }
+  ],
+  "_source": {
+    "excludes": []
+  },
+  "query": {
+    "bool": {
+      "must": [],
+      "filter": [
+        {
+          "match_all": {}
+        },
+        {
+          "geo_bounding_box": {
+            "geo.coordinates": {
+              "top_left": [
+                -129.375,
+                61.6064
+              ],
+              "bottom_right": [
+                -50.625,
+                16.63619
+              ]
+            }
+          }
+        },
+        {
+          "range": {
+            "timestamp": {
+              "gte": "2022-04-04T01:00:00.000Z",
+              "lte": "2022-04-04T04:00:00.000Z",
+              "format": "strict_date_optional_time"
+            }
+          }
+        }
+      ],
+      "should": [],
+      "must_not": []
+    }
+  }
+}
+
+RESPONSE
+{
+  "took": 0,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": 1,
+    "max_score": null,
+    "hits": []
+  },
+  "aggregations": {
+    "grid": {
+      "buckets": [
+        {
+          "1": {
+            "location": {
+              "lat": 43.34120996296406,
+              "lon": -73.61030758358538
+            },
+            "count": 1
+          },
+          "key": "6/18/23",
+          "doc_count": 1,
+          "sum_of_bytes": {
+            "value": 15709
+          }
+        }
+      ]
+    }
+  }
+}
